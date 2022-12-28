@@ -5,9 +5,19 @@ import {Context} from "../index";
 import jwtDecode from "jwt-decode";
 import {createParams, fetchParams} from "../http/paramsAPI";
 import {observer} from "mobx-react-lite";
-import {fetchRecipes} from "../http/recipeAPI";
+import {fetchOneRecipe, fetchRecipes} from "../http/recipeAPI";
+import {NavLink, useParams} from "react-router-dom";
+import {LOGIN_ROUTE, REGISTRATION_ROUTE} from "../utils/consts";
+import RecipeItem from "../components/RecipeItem";
 
 const ChickpeaCurry = observer(() => {
+
+    const {recipe} = useContext(Context)
+
+    useEffect(() => {
+        fetchRecipes().then(data => recipe.setRecipes(data.rows))
+    },[])
+
 
     const {params} = useContext(Context)
 
@@ -17,12 +27,18 @@ const ChickpeaCurry = observer(() => {
 
 
 
+        // console.log([...new Map(newRecipes.map(item => [item['id'], item])).values()])
 
+        // console.log(newRecipes)
+
+    const [isMenu, setMenu] = useState(false)
     const [height, setHeight] = useState()
     const [weight, setWeight] = useState()
     const [age, setAge] = useState()
     const [calories, setCalories] = useState(0);
     let user = jwtDecode(localStorage.getItem('token'))
+
+    // let isMenu = true
 
     let addParam = () => {
         const formData = new FormData()
@@ -38,7 +54,42 @@ const ChickpeaCurry = observer(() => {
     const [product, setProduct] = useState('');
     let [products, setProducts] = useState([]);
 
-    // console.log(calories)
+    const newRecipes = [];
+
+
+
+
+    for (let i = 0; i < recipe.recipes.length; i++) {
+        let temp = 0;
+        for (let j = 0; j < recipe.recipes[i].info.length; j++) {
+            // console.log(recipe.recipes[i].info[j].description)
+            if(products.includes(recipe.recipes[i].info[j].description)) temp++;
+        }
+        // console.log(temp);
+        if(!temp) newRecipes.push(recipe.recipes[i]);
+    }
+
+    console.log(newRecipes)
+
+    let Rec1 = []
+    let Rec2 = []
+    let Rec3 = []
+
+    newRecipes.map(i => {
+        if (i.type === 1) {
+            Rec1.push(i)
+        }else if (i.type === 2){
+            Rec2.push(i)
+        }else if (i.type ===3){
+            Rec3.push(i)
+        }
+    })
+
+    console.log(Rec1)
+    console.log(Rec2)
+    console.log(Rec3)
+
+    let finalRecipes = [Rec1[0],Rec2[0],Rec3[0]]
 
 
     let handleParametersChange = () => {
@@ -139,10 +190,29 @@ const ChickpeaCurry = observer(() => {
                                 >
                                     {"Зберегти дані"}
                                 </Button>
+                                <Button
+                                    className='cal__button'
+                                    variant={"outline-dark"}
+                                    onClick={()=> {
+                                        setMenu(true)
+                                    }}
+                                >
+                                    {"Меню на день"}
+                                </Button>
                             </Row>
                             {"Добова норма калорій: "}
                             <div>
                                 {Math.round(calories)}
+                            </div>
+                            <div className='wrapper'>
+                            {isMenu ?
+                                finalRecipes.map(i=>
+                                        <RecipeItem className='d-flex' key={i.id} recipe={i}/>
+                                ) :
+                                <div>
+
+                                </div>
+                            }
                             </div>
                         </Form>
                     </div>

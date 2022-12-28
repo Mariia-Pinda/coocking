@@ -37,7 +37,7 @@ class RecipesController {
         limit = limit || 9
         let offset = page * limit - limit
         let recipes;
-        recipes = await Recipes.findAndCountAll({limit,offset})
+        recipes = await Recipes.findAndCountAll({limit,offset,include:[{model: RecipesInfo, as: 'info'}]})
         return res.json(recipes)
 
     }

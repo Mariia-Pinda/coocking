@@ -1,0 +1,48 @@
+# Use postgres/example user/password credentials
+version: '3.1'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qazxswedc1411
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./pg-data:/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+  server:
+    build:
+      context: ./server
+    ports:
+      - "5000:5000"
+    container_name: server
+    env_file:
+      - /server/.env
+    environment:
+      POSTGRES_HOST: db
+    links:
+      - db:db
+    volumes:
+      - ./server:/usr/src/cooking/server
+      - /usr/src/cooking/server/node_modules
+  client:
+    build:
+      context: ./client
+    ports:
+      - "3000:3000"
+    container_name: client
+    restart: always
+    stdin_open: true
+    env_file:
+      - /client/.env
+    links:
+      - server
+    volumes:
+      - ./client:/usr/src/cooking/client
+      - /usr/src/cooking/client/node_modules
+volumes:
+  db:
